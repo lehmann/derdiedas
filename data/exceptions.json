@@ -1,0 +1,29 @@
+{
+  "comment": "Words that would be misclassified by suffix rules. Checked after nouns.json, before rules fire.",
+
+  "moment":     "m",
+  "zement":     "m",
+  "komment":    "m",
+
+  "talent":     "n",
+  "patent":     "n",
+  "ament":      "n",
+
+  "knie":       "n",
+  "genie":      "n",
+
+  "mosaik":     "n",
+
+  "restaurant": "n",
+
+  "abitur":     "n",
+  "futur":      "n",
+
+  "sprung":     "m",
+  "schwung":    "m",
+  "ursprung":   "m",
+  "aufschwung": "m",
+  "umschwung":  "m",
+  "anklang":    "m",
+  "gesang":     "m"
+}

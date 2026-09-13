@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "DerDieDas",
+  "version": "1.0.0",
+  "description": "Mostra o artigo definido (der/die/das) ao selecionar um substantivo alemão",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["lookup.js", "content.js"],
+      "css": ["tooltip.css"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["data/*.json"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
