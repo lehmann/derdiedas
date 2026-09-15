@@ -108,6 +108,26 @@
   color: #7c3aed;
 }
 
+.derdiedas-close-btn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1;
+  padding: 1px 5px 3px;
+  margin-left: auto;
+  transition: background 0.1s;
+}
+
+.derdiedas-close-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
 .derdiedas-tense-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -121,6 +141,10 @@
   letter-spacing: 0.07em;
   color: #9ca3af;
   margin-bottom: 5px;
+}
+
+.derdiedas-conj-panel {
+  user-select: text; /* override the base tooltip's user-select: none */
 }
 
 .derdiedas-tense-forms {
@@ -156,4 +180,6 @@
   .derdiedas-tense-forms    { color: #f3f4f6; }
   .derdiedas-tense-name     { color: #6b7280; }
   .derdiedas-person         { color: #6b7280; }
+  .derdiedas-close-btn      { border-color: #374151; color: #6b7280; }
+  .derdiedas-close-btn:hover { background: #450a0a; border-color: #7f1d1d; color: #fca5a5; }
 }
