@@ -21,7 +21,11 @@ function loadVerbDictionary() {
 function buildVerbFormMap(verbs) {
   const map = {};
   for (const [inf, d] of Object.entries(verbs)) {
+    // pp is always indexed (prefix makes it unique for separable verbs too)
     if (d.pp) map[d.pp] = inf;
+    // For separable verbs stop here — their Präsens/Präteritum forms are
+    // shared with their base verb and would cause ambiguous lookups
+    if (d.sep) continue;
     if (d.p2) map[d.p2] = inf;
     if (d.p3) map[d.p3] = inf;
     if (typeof d.pt === 'string') {
@@ -57,38 +61,47 @@ async function lookupVerb(word) {
   return null;
 }
 
+// Derive Präsens forms for a given infinitive + data (without sep prefix)
+function _prs(inf, data) {
+  if (data.prs) return data.prs;
+  const stem  = inf.slice(0, -2);
+  const sib   = /[sßzx]$/.test(stem);
+  const needE = /[td]$/.test(stem);
+  return [
+    stem + 'e',
+    data.p2 || stem + (sib ? 't' : needE ? 'est' : 'st'),
+    data.p3 || stem + (needE ? 'et' : 't'),
+    inf,
+    stem + (needE ? 'et' : 't'),
+    inf,
+  ];
+}
+
+// Derive Präteritum forms for a given infinitive + data (without sep prefix)
+function _prät(inf, data) {
+  if (Array.isArray(data.pt)) return data.pt;
+  if (typeof data.pt === 'string') {
+    const s  = data.pt;
+    const ne = /[td]$/.test(s);
+    return [s, s + (ne ? 'est' : 'st'), s, s + 'en', s + (ne ? 'et' : 't'), s + 'en'];
+  }
+  const stem  = inf.slice(0, -2);
+  const needE = /[td]$/.test(stem);
+  const ts    = stem + (needE ? 'ete' : 'te');
+  return [ts, ts + 'st', ts, ts + 'n', ts + 't', ts + 'n'];
+}
+
 function conjugate(infinitive, data) {
   const PERSONS = ['ich', 'du', 'er/sie/es', 'wir', 'ihr', 'sie/Sie'];
   const aux = data.a || 'h';
   const pp  = data.pp;
 
-  const prs = (() => {
-    if (data.prs) return data.prs;
-    const stem = infinitive.slice(0, -2);
-    const sib  = /[sßzx]$/.test(stem);
-    const needE = /[td]$/.test(stem);
-    return [
-      stem + 'e',
-      data.p2 || stem + (sib ? 't' : needE ? 'est' : 'st'),
-      data.p3 || stem + (needE ? 'et' : 't'),
-      infinitive,
-      stem + (needE ? 'et' : 't'),
-      infinitive,
-    ];
-  })();
-
-  const prät = (() => {
-    if (Array.isArray(data.pt)) return data.pt;
-    if (typeof data.pt === 'string') {
-      const s  = data.pt;
-      const ne = /[td]$/.test(s);
-      return [s, s + (ne ? 'est' : 'st'), s, s + 'en', s + (ne ? 'et' : 't'), s + 'en'];
-    }
-    const stem  = infinitive.slice(0, -2);
-    const needE = /[td]$/.test(stem);
-    const ts    = stem + (needE ? 'ete' : 'te');
-    return [ts, ts + 'st', ts, ts + 'n', ts + 't', ts + 'n'];
-  })();
+  // For separable verbs conjugate the base verb, then append the prefix
+  const baseInf = data.sep ? infinitive.slice(data.sep.length) : infinitive;
+  const rawPrs  = _prs(baseInf, data);
+  const rawPrät = _prät(baseInf, data);
+  const prs  = data.sep ? rawPrs.map(f => `${f} ${data.sep}`)  : rawPrs;
+  const prät = data.sep ? rawPrät.map(f => `${f} ${data.sep}`) : rawPrät;
 
   const hPrs  = ['habe', 'hast', 'hat', 'haben', 'habt', 'haben'];
   const sPrs  = ['bin', 'bist', 'ist', 'sind', 'seid', 'sind'];
