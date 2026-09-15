@@ -46,6 +46,12 @@
   color: #7c3aed;
 }
 
+.derdiedas-verb-tr {
+  font-size: 11px;
+  color: #c4b5fd;
+  font-style: italic;
+}
+
 .derdiedas-expand-btn {
   background: none;
   border: 1px solid #e5e7eb;
@@ -172,6 +178,7 @@
     color: #f3f4f6;
   }
   .derdiedas-word           { color: #9ca3af; }
+  .derdiedas-verb-tr        { color: #7c3aed; }
   .derdiedas-expand-btn     { border-color: #374151; color: #a78bfa; }
   .derdiedas-expand-btn:hover { background: #312e81; border-color: #6d28d9; }
   .derdiedas-back-btn       { border-color: #374151; color: #9ca3af; }

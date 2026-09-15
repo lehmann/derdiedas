@@ -93,11 +93,17 @@
       `</div>`
     ).join('');
 
+    const tr = _verbTranslationsPt?.[currentVerb.infinitive] ?? null;
+    const trHtml = tr
+      ? `<span class="derdiedas-verb-tr">${escapeHtml(tr)}</span>`
+      : '';
+
     el.className = 'derdiedas-tooltip derdiedas-conj-panel';
     el.innerHTML =
       `<div class="derdiedas-conj-header">` +
         `<button class="derdiedas-back-btn"  data-action="back"  data-derdiedas="true">‹</button>` +
         `<span class="derdiedas-inf-title">${escapeHtml(currentVerb.infinitive)}</span>` +
+        trHtml +
         `<button class="derdiedas-close-btn" data-action="close" data-derdiedas="true">×</button>` +
       `</div>` +
       `<div class="derdiedas-tense-grid">${grid}</div>`;

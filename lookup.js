@@ -3,18 +3,21 @@
 let _verbCache = null;
 let _verbLoading = null;
 let _verbFormMap = null;
+let _verbTranslationsPt = null;
 
 function loadVerbDictionary() {
   if (_verbCache) return Promise.resolve(_verbCache);
   if (_verbLoading) return _verbLoading;
-  _verbLoading = fetch(chrome.runtime.getURL('data/verbs.json'))
-    .then(r => r.json())
-    .then(verbs => {
-      _verbCache = verbs;
-      _verbFormMap = buildVerbFormMap(verbs);
-      _verbLoading = null;
-      return verbs;
-    });
+  _verbLoading = Promise.all([
+    fetch(chrome.runtime.getURL('data/verbs.json')).then(r => r.json()),
+    fetch(chrome.runtime.getURL('data/verb_translations_pt.json')).then(r => r.json()).catch(() => ({})),
+  ]).then(([verbs, translations]) => {
+    _verbCache = verbs;
+    _verbTranslationsPt = translations;
+    _verbFormMap = buildVerbFormMap(verbs);
+    _verbLoading = null;
+    return verbs;
+  });
   return _verbLoading;
 }
 
@@ -61,12 +64,23 @@ async function lookupVerb(word) {
   return null;
 }
 
+// -e- insertion rule: stems ending in t/d, OR in n/m preceded by a hard consonant
+// (e.g. öffn, rechn, atm, widm) but NOT after l/r (lern, stürm) or doubled consonant (kämm).
+function _needsE(stem) {
+  if (/[td]$/.test(stem)) return true;
+  if (/[nm]$/.test(stem)) {
+    const prev = stem.slice(-2, -1);
+    return prev.length === 1 && !/[aeiouäöülr]/.test(prev) && prev !== stem.slice(-1);
+  }
+  return false;
+}
+
 // Derive Präsens forms for a given infinitive + data (without sep prefix)
 function _prs(inf, data) {
   if (data.prs) return data.prs;
   const stem  = inf.slice(0, -2);
   const sib   = /[sßzx]$/.test(stem);
-  const needE = /[td]$/.test(stem);
+  const needE = _needsE(stem);
   return [
     stem + 'e',
     data.p2 || stem + (sib ? 't' : needE ? 'est' : 'st'),
@@ -81,13 +95,17 @@ function _prs(inf, data) {
 function _prät(inf, data) {
   if (Array.isArray(data.pt)) return data.pt;
   if (typeof data.pt === 'string') {
-    const s  = data.pt;
-    const ne = /[td]$/.test(s);
+    const s = data.pt;
+    if (s.endsWith('e')) {
+      // CSV stored the full ich/er form (e.g. "begegnete", "öffnete") —
+      // derive the remaining persons by appending n/st/t directly.
+      return [s, s + 'st', s, s + 'n', s + 't', s + 'n'];
+    }
+    const ne = _needsE(s);
     return [s, s + (ne ? 'est' : 'st'), s, s + 'en', s + (ne ? 'et' : 't'), s + 'en'];
   }
   const stem  = inf.slice(0, -2);
-  const needE = /[td]$/.test(stem);
-  const ts    = stem + (needE ? 'ete' : 'te');
+  const ts    = stem + (_needsE(stem) ? 'ete' : 'te');
   return [ts, ts + 'st', ts, ts + 'n', ts + 't', ts + 'n'];
 }
 
