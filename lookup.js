@@ -52,8 +52,9 @@ async function lookupVerb(word) {
   const fromMap = _verbFormMap[key];
   if (fromMap) return { infinitive: fromMap, data: verbs[fromMap] };
 
-  // Strip common Präsens endings to derive infinitive
-  for (const sfx of ['est', 'st', 'et', 'e', 'en', 't']) {
+  // Strip common endings (Präsens and Präteritum weak) to derive infinitive.
+  // 'ete'/'te' before 'et'/'e' so longer suffixes match first.
+  for (const sfx of ['est', 'st', 'ete', 'te', 'et', 'e', 'en', 't']) {
     if (key.endsWith(sfx)) {
       const stem = key.slice(0, -sfx.length);
       const inf  = stem + 'en';
@@ -101,7 +102,10 @@ function _prät(inf, data) {
       // derive the remaining persons by appending n/st/t directly.
       return [s, s + 'st', s, s + 'n', s + 't', s + 'n'];
     }
-    const ne = _needsE(s);
+    // For stored strong-verb stems (nahm, bot, ging…) only t/d endings need -e-
+    // insertion (bot→botest). The consonant+n/m rule (_needsE) is for infinitive
+    // stems only and must NOT fire here — "nahm" gives "nahmst", not "nahmest".
+    const ne = /[td]$/.test(s);
     return [s, s + (ne ? 'est' : 'st'), s, s + 'en', s + (ne ? 'et' : 't'), s + 'en'];
   }
   const stem  = inf.slice(0, -2);
